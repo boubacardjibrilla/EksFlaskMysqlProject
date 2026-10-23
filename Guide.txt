@@ -1,0 +1,61 @@
+﻿Projet DevOps FLASK - MYSQL - EKS
+1. Lancement de l'instance EC2
+* Lancer une instance EC2 Amazon Linux 2
+* Vérifier si AWS CLI est déjà installé
+2. Installation et Configuration d'AWS CLI
+* Configurer les identifiants ou utiliser un rôle IAM :
+
+
+aws configure
+3. Installation de Kubectl
+sudo yum update -yInstaller kubectl sur la machine
+
+
+chmod +x ./kubectl
+mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$HOME/bin:$PATH
+echo 'export PATH=$HOME/bin:$PATH' >> ~/.bashrc
+kubectl version
+4. Installation de eksctl et Création du Cluster EKS
+eksctl create cluster --name reyaz-cluster --region ap-south-1 --node-type t2.small --nodes-min 2 --nodes-max 3
+eksctl get cluster
+kubectl get nodes
+Note sur la résolution des erreurs de version :
+Si l'erreur "error: exec plugin: invalid apiVersion client.authentication.k8s.io/v1alpha1" apparaît :
+
+
+mv kubectl kubectl_1.24
+mv bin bin_1.24
+
+
+Télécharger kubectl v1.23.15
+
+
+chmod +x ./kubectl
+mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$PATH:$HOME/bin
+kubectl version
+
+
+Mettre à jour la configuration kubeconfig :
+
+
+aws eks update-kubeconfig --name reyaz-cluster
+kubectl get nodes
+
+
+Si nécessaire, mettre à jour AWS CLI :
+
+
+unzip awscliv2.zip
+sudo ./aws/install --update
+5. Installation de Git et Clonage du Projet
+yum install git -yCloner le dépôt du projet Flask MySQL EKS
+6. Déploiement des Applications Kubernetes
+kubectl apply -f mysql-secrets.yml -f mysql-configmap.yml -f mysql-deployment.yml -f mysql-svc.yml
+kubectl apply -f two-tier-app-deployment.yml -f two-tier-app-svc.yml
+kubectl get all
+kubectl get deploy
+7. Redémarrage et Nettoyage
+kubectl rollout restart deployment two-tier-app
+kubectl delete deployment two-tier-app mysql
+kubectl delete service two-tier-app-service mysql
+eksctl delete cluster --name reyaz-cluster
